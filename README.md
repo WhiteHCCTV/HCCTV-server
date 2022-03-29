@@ -20,18 +20,26 @@
 > # docker
 >
 > - docker가 없다면 docker 설치 후 진행해주세요
->   - mac :: brew install docker
+>   - osx
+>   ``` 
+>   brew install docker 
+>   ```
+>   - linux
+>   ```
+>   sudo apt-get install docker-engine -y && sudo apt-get install docker-engine -y
+>   ```
 >
 > # poetry
 > - poetry가 없다면 poetry 설치 후 진행해주세요
->   - mac :: brew install poetry
->   - linux, wsl :: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+>   - osx, linux, wsl 
+>   ``` 
+>   curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python - 
+>   ```
 > # local 세팅
 >
->       git clone ${주소} && poetry install
+>       git clone https://github.com/WhiteHCCTV/HCCTV-server && poetry install
 >
 > # 서버 구동
->
 > ## build.sh main
 >
 > - 배포 서버를 위한 구동
