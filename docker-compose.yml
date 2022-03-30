@@ -1,0 +1,42 @@
+version: "3"
+
+services:
+  echo-dev: // golang web
+    build: ./
+    container_name: fl-server
+    ports: 
+      - "3000:3000"
+    tty: true
+    volumes:
+      - ./test:/test
+  nginx: // loadbalancer
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - .docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - .docker/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf
+      - .docker/nginx/static/error.html:/etc/nginx/static/error.html
+#    env_file: .env
+  dev_db: // db for scheduling with client id
+    image: mysql:5.7
+    container_name: dev_db
+    restart: always
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --lower_case_table_names=1
+    volumes:
+      - .db/conf.d:/etc/mysql/conf.d
+    env_file: .env
+  logger_db: // db for server log
+    image: mongo
+    container_name: logger_db
+    restart: always
+    env_file: .env
+    volumes:
+      - .docker/logger-db/initdb.d/create-app-user.sh:/docker-entrypoint-initdb.d/create-app-user.sh
+     
+
