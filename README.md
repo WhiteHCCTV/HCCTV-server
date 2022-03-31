@@ -29,15 +29,9 @@
 >   sudo apt-get install docker-engine -y && sudo apt-get install docker-engine -y
 >   ```
 >
-> # poetry
-> - poetry가 없다면 poetry 설치 후 진행해주세요
->   - osx, linux, wsl 
->   ``` 
->   curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python - 
->   ```
 > # local 세팅
 >
->       git clone https://github.com/WhiteHCCTV/HCCTV-server && poetry install
+>       git clone https://github.com/WhiteHCCTV/HCCTV-server
 >
 > # 서버 구동
 > ## build.sh main
