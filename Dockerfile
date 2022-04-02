@@ -1,7 +1,5 @@
 FROM golang:1.18
 
-WORKDIR /go/src/app
-
-COPY main.go go.mod go.sum ./
+WORKDIR /go/apps/HCCTV/src
 
 CMD ["go", "run", "main.go"]
