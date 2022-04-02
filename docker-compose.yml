@@ -8,6 +8,7 @@ services:
       - "3000:3000"
     tty: true
     volumes:
+      - .env:/go/apps/HCCTV/src/.env
       - ./src:/go/apps/HCCTV/src
   nginx: # loadbalancer
     image: nginx:latest
