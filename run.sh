@@ -3,9 +3,9 @@
 case "$1" in
 	dev) # dev env up
 		if [ "$2" == "" ] ; then
-			docker compose up --build
-		elif [ "$2" == "-d" ]; then
-			docker compose up --build -d
+			docker compose up --build dev_db logger_db -d
+			./check-db-ready.sh
+			docker compose up --build echo-dev nginx 
  		else
 			echo "'$2' is unknwon option"
 		fi
