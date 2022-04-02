@@ -13,7 +13,8 @@ func main() {
   // Middleware
   e.Use(middleware.Logger())
   e.Use(middleware.Recover())
-
+	e.File("/", "static/index.html")
+	e.Static("/static", "static")
   // Routes
   e.GET("/", hello)
 
