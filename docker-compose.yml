@@ -1,4 +1,4 @@
-version: "3"
+version: "3.8"
 
 services:
   echo-dev: # golang web
@@ -28,8 +28,6 @@ services:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
       - --lower_case_table_names=1
-    volumes:
-      - .db/conf.d:/etc/mysql/conf.d
     env_file: .env
   logger_db: # db for server log
     image: mongo
