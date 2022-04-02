@@ -34,12 +34,12 @@
 >       git clone https://github.com/WhiteHCCTV/HCCTV-server
 >
 > # 서버 구동
-> ## build.sh main
+> ## run.sh deploy
 >
 > - 배포 서버를 위한 구동
 > - Azure, domain setting으로 서버가 구동됩니다 ( 추후 구현 )
 >
-> ## build.sh dev
+> ## run.sh dev
 >
 > - 로컬 개발 서버를 위한 구동
 > - localhost db, domain setting으로 서버가 구동됩니다.
