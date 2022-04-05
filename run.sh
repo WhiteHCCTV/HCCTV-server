@@ -7,7 +7,7 @@ case "$1" in
 	;;
 	dev) # dev env up
 		if [ "$2" == "" ] ; then
-		        npm install --prefix ./HCCTV-apm
+		  npm install --prefix ./HCCTV-apm
 			npm run build --prefix ./HCCTV-apm
 			docker compose up --build dev_db logger_db -d
 			./check-db-ready.sh
