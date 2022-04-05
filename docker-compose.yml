@@ -22,7 +22,7 @@ services:
       - .docker/nginx/static/error.html:/etc/nginx/static/error.html
 #    env_file: .env
   dev_db: # db for scheduling with client id
-    image: mysql:5.7
+    image: mysql/mysql-server
     container_name: dev_db
     restart: always
     command:
