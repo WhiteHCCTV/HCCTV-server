@@ -1,8 +1,14 @@
 #!/bin/sh
 
 case "$1" in
+	apm) # apm ui
+		npm install --prefix ./HCCTV-apm
+		npm run serve --prefix ./HCCTV-apm
+	;;
 	dev) # dev env up
 		if [ "$2" == "" ] ; then
+		        npm install --prefix ./HCCTV-apm
+			npm run build --prefix ./HCCTV-apm
 			docker compose up --build dev_db logger_db -d
 			./check-db-ready.sh
 			docker compose up --build echo-dev nginx 
