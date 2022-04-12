@@ -6,6 +6,10 @@ src/static/
 # local env files
 .env.local
 .env.*.local
+.env
+
+# local storage
+dev/
 
 # Log files
 npm-debug.log*
