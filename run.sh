@@ -6,15 +6,6 @@ case "$1" in
 		npm run serve --prefix ./HCCTV-apm
 	;;
 	dev) # dev env up
-<<<<<<< Updated upstream
-		if [ "$2" == "" ] ; then
-		  npm install --prefix ./HCCTV-apm
-			npm run build --prefix ./HCCTV-apm
-			docker compose up --build dev_db logger_db -d
-			./check-db-ready.sh
-			docker compose up --build echo-dev nginx 
- 		else
-=======
 		if [ "$2" == "apm" ] ; then
 		  	npm install --prefix ./HCCTV-apm
 			npm run build --prefix ./HCCTV-apm
@@ -26,7 +17,6 @@ case "$1" in
 			./check-db-ready.sh
 			docker compose up --build echo-dev nginx 
 		else
->>>>>>> Stashed changes
 			echo "'$2' is unknwon option"
 		fi
 	;;
