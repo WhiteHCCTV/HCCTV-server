@@ -7,26 +7,54 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net"
 )
-func broadcast(hub *Hub){
-	message := []byte("hi im server")
-	for client := range hub.clients {
-		client.send <- message
-		// net.Conn.SetReadDeadline(time.Now().Add(2 * time.Minute)) // 2分钟无接收信息超时
-		// _,err := (net.Conn).Write(message)
-		_, err := (*client.conn).Write(message)
-		if err != nil {
-			fmt.Println("Failed to write data : ", err)
-			break;
-		}
-		// time.Sleep(1 * time.Second)
-		log.Println("Send to cli")
+
+// Main goroutine에서 테스트용 함수
+func checkClient(hub *Hub){
+	log.Println(len(hub.clients),"명의 클라이언트 연결 상태..")
+	for client:= range hub.clients {
+		log.Println(client.conn)
 	}
-	
-	
 }
+
+// 각각의 connection handle
+//   @ 커넥션 종료를 감지하면 notify 채널에 에러 전달
+//   @ hub의 unregister 채널에 종료한 클라이언트를 전달하고 핸들러 고루틴 종료
+func handleConnection(conn net.Conn, hub *Hub) {
+	defer conn.Close()
+	notify := make(chan error)
+	go func() {
+		buf := make([]byte, 1024)
+		for {
+			n, err := conn.Read(buf)
+			if err != nil {
+				notify <- err
+				return
+			}
+			if n > 0 {
+				fmt.Println("unexpected data: %s", buf[:n])
+			}
+		}
+	}()
+	client := &Client{hub: hub, conn: &conn, send: make(chan []byte, 256)}
+	client.hub.register <- client
+	// 새로운 클라이언트 연결 시 연결된 모든 클라이언트에게 테스트 브로드캐스트
+	hub.broadcast<-([]byte("테스트"))
+	for {
+		err := <-notify
+		if io.EOF == err {
+			fmt.Println("connection dropped message", err)
+			hub.unregister <- client
+			return
+		}
+		
+	}
+}
+
+
 func main() {
 	flag.Parse()
 	hub := newHub()
@@ -39,16 +67,8 @@ func main() {
 		panic(err)
 	}
 	for {
-        conn, err := server.Accept()
-        if err != nil {
-            log.Println("Failed to Accept : ", err)
-            continue
-        }
-		log.Println(conn," is conneted !!")
-		// 클라이언트가 서버에 접속하면 client객체 생성하여 허브에 추가
-		client := &Client{hub: hub, conn: &conn, send: make(chan []byte, 256)}
-		client.hub.register <- client
-		// go client.writePump()
-        go broadcast(hub)
-    }
+		// 소켓 접속 클라이언트가 생기면 handleConnection goroutine에 위임
+		conn, _ := server.Accept()
+		go handleConnection(conn, hub)
+	}	
 }
