@@ -9,20 +9,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"time"
-)
-const (
-	// Time allowed to write a message to the peer.
-	writeWait = 10 * time.Second
-
-	// Time allowed to read the next pong message from the peer.
-	pongWait = 60 * time.Second
-
-	// Send pings to peer with this period. Must be less than pongWait.
-	pingPeriod = (pongWait * 9) / 10
-
-	// Maximum message size allowed from peer.
-	maxMessageSize = 512
 )
 func broadcast(hub *Hub){
 	message := []byte("hi im server")
@@ -58,12 +44,11 @@ func main() {
             log.Println("Failed to Accept : ", err)
             continue
         }
-		log.Println("conneted !!")
+		log.Println(conn," is conneted !!")
 		// 클라이언트가 서버에 접속하면 client객체 생성하여 허브에 추가
 		client := &Client{hub: hub, conn: &conn, send: make(chan []byte, 256)}
 		client.hub.register <- client
 		// go client.writePump()
         go broadcast(hub)
     }
-	defer server.Close()
 }
