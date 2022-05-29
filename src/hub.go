@@ -41,26 +41,26 @@ func (h *Hub) run() {
 		case client := <-h.register:
 			// log.Println(client.conn)
 			h.clients[client] = true
-			
+			log.Println(len(h.clients),"명의 클라이언트 연결 상태..")
+			for client:= range h.clients {
+				log.Println(client.conn)
+			}
 			// 등록하게되면 허브의 clients[client]를 true로 등록한다.
 		case client := <-h.unregister:
 			if _, ok := h.clients[client]; ok {
 				// 해당 클라이언트 퇴장
 				delete(h.clients, client)
 				close(client.send)
+				log.Println(client.conn, "클라이언트 연결 종료")
 			}
 		case message := <-h.broadcast:
 			log.Println(message)
-
+			
+			// 모든 클라이언트에게 전송
 			for client := range h.clients {
-				client.send <- message
-				// select {
-				// case client.send <- message:
-				// default:
-				// 	close(client.send)
-				// 	delete(h.clients, client)
-				// }
+				(*client.conn).Write(message)
 			}
+			
 		}
 	}
 }
