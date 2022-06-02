@@ -6,6 +6,7 @@ package main
 
 import (
 	"HCCTV/conf"
+	"log"
 	"flag"
 	"fmt"
 	"io"
@@ -89,18 +90,18 @@ func handleConnection(conn net.Conn, hub *Hub) {
 
 
 func main() {
-	fmt.Println(conf.GetAddr())
 	flag.Parse()
 	hub := newHub()
 	c := make(chan bool)
 	go aggregationTimer(hub, c)
 	go hub.run()
 	// 소켓 서버 
-	serverAddr := "localhost:8080"
+	serverAddr := conf.GetAddr()
 	server, err := net.Listen("tcp", serverAddr)
 	if err != nil {
 		panic(err)
 	}
+	log.Println("TCP Socket opend at", serverAddr)
 	for {
 		// 소켓 접속 클라이언트가 생기면 handleConnection goroutine에 위임
 		conn, _ := server.Accept()
