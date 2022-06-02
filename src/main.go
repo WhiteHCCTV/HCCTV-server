@@ -74,6 +74,7 @@ func handleConnection(conn net.Conn, hub *Hub) {
 		case err := <-notify:
 			if io.EOF == err {
 				fmt.Println(client.conn," is disconnected : ", err)
+				currWeight--
 				hub.unregister <- client
 				return
 			}
