@@ -9,6 +9,7 @@ import "log"
 // Hub maintains the set of active clients and broadcasts messages to the
 // clients.
 type Hub struct {
+
 	// Registered clients.
 	clients map[*Client]bool
 
@@ -50,7 +51,7 @@ func (h *Hub) run() {
 			if _, ok := h.clients[client]; ok {
 				// 해당 클라이언트 퇴장
 				delete(h.clients, client)
-				close(client.send)
+				close(client.weight)
 				log.Println(client.conn, "클라이언트 연결 종료")
 			}
 		case message := <-h.broadcast:
