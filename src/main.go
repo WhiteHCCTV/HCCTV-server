@@ -8,25 +8,41 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"log"
 	"net"
 )
-var now uint32 = 0
-// Main goroutine에서 테스트용 함수
-func checkClient(hub *Hub){
-	log.Println(len(hub.clients),"명의 클라이언트 연결 상태..")
-	for client:= range hub.clients {
-		log.Println(client.conn)
-	}
-}
+
+
+var (
+	// round scheuler
+	//   @ If currWeight > N ( hyperParameter, num of client )
+	//        and currWeight == len or hub.clients
+	//        -> federated averaging start
+	currWeight uint32 = 0
+
+	// HyperParameter, threshold of minimum num of clients
+	N = 5
+)
+
+
 func fed_avg(hub *Hub){
-	for {}
+	fmt.Println("가중치 평균 연산 시작")
+	fmt.Println("현재 참여 중인 클라이언트")
+
+	// @Todo : matrix average algorithm
+	for client := range hub.clients{
+		fmt.Println(client.conn)
+	}
+
+	// round parameter reinitialize
+	currWeight = 0
+	fmt.Println("currWeight 초기화 : ", currWeight)
 }
 func aggregationTimer(hub *Hub, c chan bool){
+	// This goroutine is always running state
 	for {
-		if (hub.count == now){
+		// This will check the state is ready to fed_avg 
+		if (uint32(len(hub.clients)) == currWeight && len(hub.clients) > N){
 			fed_avg(hub)
-			now = 0
 		}
 	}
 }
@@ -38,7 +54,7 @@ func handleConnection(conn net.Conn, hub *Hub) {
 	notify := make(chan error) // detect connection state
 	weights := make(chan []byte) // receive weights
 	go func() {
-		buf := make([]byte, 1024)
+		buf := make([]byte, 4096)
 		for {
 			n, err := conn.Read(buf)
 			if err != nil {
@@ -48,30 +64,23 @@ func handleConnection(conn net.Conn, hub *Hub) {
 			weights <- buf[:n]
 		}
 	}()
-	client := &Client{hub: hub, conn: &conn, send: make(chan []byte, 4096)}
-	client.hub.register <- client
-	hub.count++
-	// 새로운 클라이언트 연결 시 연결된 모든 클라이언트에게 테스트 브로드캐스트
-	hub.broadcast<-([]byte("테스트"))
-	fmt.Println("![Client add]",hub.count, " and " , now , "!amd",len(hub.clients))
+	client := &Client{hub: hub, conn: &conn, weight: make(chan []byte, 4096)}
+	client.hub.register <- client	
 	// connection 생애 주기 동안 반복
 	for {
 		select {
 		// 연결 해제 감지
 		case err := <-notify:
 			if io.EOF == err {
-				fmt.Println("connection dropped message", err)
+				fmt.Println(client.conn," is disconnected : ", err)
 				hub.unregister <- client
 				return
 			}
 		// 로컬 모델의 가중치 수신 감지
 		case receive := <- weights:
-			// fmt.Println(receive)
-			// fmt.Println(string(receive))
-			fmt.Println("received : ",len(receive))
-			now++
-			fmt.Println("![Client send to me]",hub.count, " and " , now , "!amd",len(hub.clients))
-
+			fmt.Println("received : ",receive)
+			currWeight++
+			fmt.Println("![Client send to me] recevied : ", currWeight , " and connected : ",len(hub.clients))
 		}
 	}
 }
@@ -92,8 +101,6 @@ func main() {
 	for {
 		// 소켓 접속 클라이언트가 생기면 handleConnection goroutine에 위임
 		conn, _ := server.Accept()
-		fmt.Println(conn.RemoteAddr().String())
-		go handleConnection(conn, hub)
-		
+		go handleConnection(conn, hub)		
 	}	
 }

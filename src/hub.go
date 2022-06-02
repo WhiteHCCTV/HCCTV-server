@@ -10,9 +10,6 @@ import "log"
 // clients.
 type Hub struct {
 
-	// Num of clients connected
-	count uint32
-
 	// Registered clients.
 	clients map[*Client]bool
 
@@ -28,7 +25,6 @@ type Hub struct {
 
 func newHub() *Hub {
 	return &Hub{
-		count : 0,
 		// 모든 클라이언트에게 보낼 데이터 저장 공간
 		broadcast:  make(chan []byte),
 		// 새로 참여하는 클라이언트
@@ -55,7 +51,7 @@ func (h *Hub) run() {
 			if _, ok := h.clients[client]; ok {
 				// 해당 클라이언트 퇴장
 				delete(h.clients, client)
-				close(client.send)
+				close(client.weight)
 				log.Println(client.conn, "클라이언트 연결 종료")
 			}
 		case message := <-h.broadcast:

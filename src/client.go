@@ -16,5 +16,5 @@ type Client struct {
 	conn *net.Conn
 
 	// Buffered channel of outbound messages.
-	send chan []byte
+	weight chan []byte
 }
