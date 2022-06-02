@@ -11,7 +11,7 @@ import (
 	"log"
 	"net"
 )
-
+var now uint32 = 0
 // Main goroutine에서 테스트용 함수
 func checkClient(hub *Hub){
 	log.Println(len(hub.clients),"명의 클라이언트 연결 상태..")
@@ -19,7 +19,17 @@ func checkClient(hub *Hub){
 		log.Println(client.conn)
 	}
 }
-
+func fed_avg(hub *Hub){
+	for {}
+}
+func aggregationTimer(hub *Hub, c chan bool){
+	for {
+		if (hub.count == now){
+			fed_avg(hub)
+			now = 0
+		}
+	}
+}
 // 각각의 connection handle
 //   @ 커넥션 종료를 감지하면 notify 채널에 에러 전달
 //   @ hub의 unregister 채널에 종료한 클라이언트를 전달하고 핸들러 고루틴 종료
@@ -35,17 +45,15 @@ func handleConnection(conn net.Conn, hub *Hub) {
 				notify <- err
 				return
 			}
-			if n > 0 {
-				fmt.Println("unexpected data: %s", buf[:n])
-			}
 			weights <- buf[:n]
 		}
 	}()
-	client := &Client{hub: hub, conn: &conn, send: make(chan []byte, 256)}
+	client := &Client{hub: hub, conn: &conn, send: make(chan []byte, 4096)}
 	client.hub.register <- client
+	hub.count++
 	// 새로운 클라이언트 연결 시 연결된 모든 클라이언트에게 테스트 브로드캐스트
 	hub.broadcast<-([]byte("테스트"))
-	
+	fmt.Println("![Client add]",hub.count, " and " , now , "!amd",len(hub.clients))
 	// connection 생애 주기 동안 반복
 	for {
 		select {
@@ -58,7 +66,12 @@ func handleConnection(conn net.Conn, hub *Hub) {
 			}
 		// 로컬 모델의 가중치 수신 감지
 		case receive := <- weights:
-			fmt.Println("receive",string(receive))
+			// fmt.Println(receive)
+			// fmt.Println(string(receive))
+			fmt.Println("received : ",len(receive))
+			now++
+			fmt.Println("![Client send to me]",hub.count, " and " , now , "!amd",len(hub.clients))
+
 		}
 	}
 }
@@ -67,8 +80,9 @@ func handleConnection(conn net.Conn, hub *Hub) {
 func main() {
 	flag.Parse()
 	hub := newHub()
+	c := make(chan bool)
+	go aggregationTimer(hub, c)
 	go hub.run()
-
 	// 소켓 서버 
 	serverAddr := "localhost:4000"
 	server, err := net.Listen("tcp", serverAddr)
@@ -78,6 +92,8 @@ func main() {
 	for {
 		// 소켓 접속 클라이언트가 생기면 handleConnection goroutine에 위임
 		conn, _ := server.Accept()
+		fmt.Println(conn.RemoteAddr().String())
 		go handleConnection(conn, hub)
+		
 	}	
 }

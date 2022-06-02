@@ -9,6 +9,10 @@ import "log"
 // Hub maintains the set of active clients and broadcasts messages to the
 // clients.
 type Hub struct {
+
+	// Num of clients connected
+	count uint32
+
 	// Registered clients.
 	clients map[*Client]bool
 
@@ -24,6 +28,7 @@ type Hub struct {
 
 func newHub() *Hub {
 	return &Hub{
+		count : 0,
 		// 모든 클라이언트에게 보낼 데이터 저장 공간
 		broadcast:  make(chan []byte),
 		// 새로 참여하는 클라이언트
