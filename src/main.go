@@ -5,6 +5,7 @@
 package main
 
 import (
+	"HCCTV/conf"
 	"flag"
 	"fmt"
 	"io"
@@ -87,13 +88,14 @@ func handleConnection(conn net.Conn, hub *Hub) {
 
 
 func main() {
+	fmt.Println(conf.GetAddr())
 	flag.Parse()
 	hub := newHub()
 	c := make(chan bool)
 	go aggregationTimer(hub, c)
 	go hub.run()
 	// 소켓 서버 
-	serverAddr := "localhost:4000"
+	serverAddr := "localhost:8080"
 	server, err := net.Listen("tcp", serverAddr)
 	if err != nil {
 		panic(err)
