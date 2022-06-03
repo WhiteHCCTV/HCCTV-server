@@ -5,10 +5,10 @@ services:
     build: ./
     container_name: fl-server
     ports: 
-      - "3000:3000"
+      - "3000:4000"
     tty: true
     volumes:
-      - .env:/go/apps/HCCTV/src/.env
+      - .env:/go/apps/HCCTV/.env
       - ./src:/go/apps/HCCTV/src
   nginx: # loadbalancer
     image: nginx:latest
