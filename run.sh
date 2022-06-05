@@ -1,5 +1,7 @@
 #!/bin/sh
 
+mkdir src/weights
+
 case "$1" in
 	apm) # apm ui
 		npm install --prefix ./HCCTV-apm
