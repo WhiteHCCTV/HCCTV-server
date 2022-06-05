@@ -7,9 +7,14 @@ package main
 import (
 	"HCCTV/conf"
 	"log"
+	"io/ioutil"
+	"time"
+	"bytes"
 	"flag"
 	"fmt"
 	"io"
+	"strings"
+	"strconv"
 	"net"
 )
 
@@ -54,16 +59,53 @@ func aggregationTimer(hub *Hub, c chan bool){
 func handleConnection(conn net.Conn, hub *Hub) {
 	defer conn.Close()
 	notify := make(chan error) // detect connection state
-	weights := make(chan []byte) // receive weights
+	weights := make([]byte, 0) // receive local weights
 	go func() {
-		buf := make([]byte, 4096)
+		buf := make([]byte, 30) // this will check disconnection:EOF & "sizeNNNNNNNNNNNN"
 		for {
-			n, err := conn.Read(buf)
+			_, err := conn.Read(buf)
 			if err != nil {
 				notify <- err
 				return
 			}
-			weights <- buf[:n]
+
+			data := string(buf[:bytes.Index(buf, []byte("\x00"))])
+			// Parameter file transfer process
+			//   1. Client send me "sizeNN..NN" and binary of file.
+			//   2. Parsing size and recevie byte until over size.
+			//   3. Cut the weight [0:size] and write file.
+			//   4. CurrWeight ++
+			if (len(data)>4  && strings.Compare("size",data[:4])==0){
+				size, err := strconv.Atoi(data[4:])
+				if err != nil {
+					log.Println(err)
+				}
+				fmt.Println("--------File receive start-------\n")
+				dump := 0
+				for{
+					buf = make([]byte,1024)
+					if (size < dump){
+						break
+					}
+					_,err = conn.Read(buf)
+					if err!=nil{
+						log.Println(err)
+					}
+					weights = append(weights, buf...)
+					dump += 1024
+				}
+				weights = weights[:size]
+				fmt.Println("--------File receive done-------\n")
+
+				now := time.Now().Format("2006-01-02#15:04:05")
+				err = ioutil.WriteFile("./weights/"+now, weights, 0644)
+				if err != nil {
+					panic(err)
+				}
+				fmt.Printf("--------Create file at ./weights/%s-------\n",now)
+				currWeight++
+			}
+			
 		}
 	}()
 	client := &Client{hub: hub, conn: &conn, weight: make(chan []byte, 4096)}
@@ -79,11 +121,6 @@ func handleConnection(conn net.Conn, hub *Hub) {
 				hub.unregister <- client
 				return
 			}
-		// 로컬 모델의 가중치 수신 감지
-		case receive := <- weights:
-			fmt.Println("received : ",receive)
-			currWeight++
-			fmt.Println("![Client send to me] recevied : ", currWeight , " and connected : ",len(hub.clients))
 		}
 	}
 }
