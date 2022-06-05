@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package main
+package manage
 
 import (
 	"net"
@@ -10,11 +10,11 @@ import (
 
 // Client is a middleman between the websocket connection and the hub.
 type Client struct {
-	hub *Hub
+	Hub *Hub
 
 	// The websocket connection.
-	conn *net.Conn
+	Conn *net.Conn
 
 	// Buffered channel of outbound messages.
-	weight chan []byte
+	Weight chan []byte
 }

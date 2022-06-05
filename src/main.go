@@ -15,6 +15,7 @@ import (
 	"io"
 	"strings"
 	"strconv"
+	. "HCCTV/manage"
 	"net"
 )
 
@@ -36,8 +37,8 @@ func fed_avg(hub *Hub){
 	fmt.Println("현재 참여 중인 클라이언트")
 
 	// @Todo : matrix average algorithm
-	for client := range hub.clients{
-		fmt.Println(client.conn)
+	for client := range hub.Clients{
+		fmt.Println(client.Conn)
 	}
 
 	// round parameter reinitialize
@@ -48,7 +49,7 @@ func aggregationTimer(hub *Hub, c chan bool){
 	// This goroutine is always running state
 	for {
 		// This will check the state is ready to fed_avg 
-		if (uint32(len(hub.clients)) == currWeight && len(hub.clients) > N){
+		if (uint32(len(hub.Clients)) == currWeight && len(hub.Clients) > N){
 			fed_avg(hub)
 		}
 	}
@@ -108,17 +109,17 @@ func handleConnection(conn net.Conn, hub *Hub) {
 			
 		}
 	}()
-	client := &Client{hub: hub, conn: &conn, weight: make(chan []byte, 4096)}
-	client.hub.register <- client	
+	client := &Client{Hub: hub, Conn: &conn, Weight: make(chan []byte, 4096)}
+	client.Hub.Register <- client	
 	// connection 생애 주기 동안 반복
 	for {
 		select {
 		// 연결 해제 감지
 		case err := <-notify:
 			if io.EOF == err {
-				fmt.Println(client.conn," is disconnected : ", err)
+				fmt.Println(client.Conn," is disconnected : ", err)
 				currWeight--
-				hub.unregister <- client
+				hub.Unregister <- client
 				return
 			}
 		}
@@ -128,10 +129,10 @@ func handleConnection(conn net.Conn, hub *Hub) {
 
 func main() {
 	flag.Parse()
-	hub := newHub()
+	hub := NewHub()
 	c := make(chan bool)
 	go aggregationTimer(hub, c)
-	go hub.run()
+	go hub.Run()
 	// 소켓 서버 
 	serverAddr := conf.GetAddr()
 	server, err := net.Listen("tcp", serverAddr)
