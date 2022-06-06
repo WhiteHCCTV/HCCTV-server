@@ -104,7 +104,7 @@ func handleConnection(conn net.Conn, hub *Hub) {
 				fmt.Println("--------Local weights receiving done-------")
 
 				now := time.Now().Format("2006-01-02#15:04:05")
-				err = ioutil.WriteFile("./weights/"+now, weights, 0644)
+				err = ioutil.WriteFile("./aggregator/locals/"+now, weights, 0644)
 				if err != nil {
 					panic(err)
 				}
@@ -122,7 +122,7 @@ func handleConnection(conn net.Conn, hub *Hub) {
 		// 연결 해제 감지
 		case err := <-notify:
 			if io.EOF == err {
-				fmt.Println(client.Conn," is disconnected : ", err)
+				// fmt.Println(client.Conn," is disconnected : ", err)
 				currWeight--
 				hub.Unregister <- client
 				return
