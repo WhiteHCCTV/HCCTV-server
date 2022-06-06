@@ -81,7 +81,7 @@ class Updater:
         self.global_weights = w_avg
 
         # Save aggregated global weights
-        self.save_weights(self.global_weights, './aggregator/globals/global.pickle')
+        self.save_weights(self.global_weights, './globals/global.pickle')
 
     def save_weights(self, givenWeights, PATH):
         with open(PATH, 'wb') as f:
@@ -105,9 +105,9 @@ if __name__=="__main__":
         format='[%(levelname)s][%(asctime)s]: %(message)s',
         level=getattr(logging, "INFO"), datefmt='%H:%M:%S'
     )
-    PATH = './aggregator/locals/'
+    PATH = './locals/'
     lst = os.listdir(PATH)
-    config = Config("./aggregator/configs/params.json")
+    config = Config("./configs/params.json")
 
     initTester = Updater(config)
     initTester.set_init_weights(PATH+str(lst[0]))
