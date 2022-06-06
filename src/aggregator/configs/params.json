@@ -7,7 +7,7 @@
     },
     "dataset":"MNIST",
     "paths": {
-        "data": "./dataset",
+        "data": "./aggregator/dataset",
         "model": "./models"
     },
     "network":{
