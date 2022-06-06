@@ -53,7 +53,8 @@ func aggregationTimer(hub *Hub, c chan bool){
 	// This goroutine is always running state
 	for {
 		// This will check the state is ready to fed_avg 
-		if (uint32(len(hub.Clients)) == currWeight && len(hub.Clients) > N){
+		// if (uint32(len(hub.Clients)) == currWeight && len(hub.Clients) > N){
+		if (currWeight > 9 ){
 			fed_avg(hub)
 		}
 	}
