@@ -6,17 +6,19 @@ package main
 
 import (
 	"HCCTV/conf"
-	"log"
-	"io/ioutil"
-	"time"
+	. "HCCTV/manage"
 	"bytes"
 	"flag"
 	"fmt"
 	"io"
-	"strings"
-	"strconv"
-	. "HCCTV/manage"
+	"io/ioutil"
+	"log"
 	"net"
+	"os"
+	"os/exec"
+	"strconv"
+	"strings"
+	"time"
 )
 
 
@@ -28,7 +30,7 @@ var (
 	currWeight uint32 = 0
 
 	// HyperParameter, threshold of minimum num of clients
-	N = 5
+	N = 2
 )
 
 
@@ -37,6 +39,12 @@ func fed_avg(hub *Hub){
 	fmt.Println("현재 참여 중인 클라이언트")
 
 	// @Todo : matrix average algorithm
+	cmd  := exec.Command("python3","./aggregator/aggregator.py")
+	cmd.Stdout = os.Stdout
+	if err := cmd.Run() ; err != nil {
+		log.Println(err)
+	}
+
 	for client := range hub.Clients{
 		fmt.Println(client.Conn)
 	}
