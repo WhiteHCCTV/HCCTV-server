@@ -143,7 +143,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	// log.Println("TCP Socket opend at", serverAddr)
+	log.Println("Aggregation server opend at", serverAddr)
 	for {
 		// 소켓 접속 클라이언트가 생기면 handleConnection goroutine에 위임
 		conn, _ := server.Accept()
