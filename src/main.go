@@ -18,7 +18,6 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
-	"time"
 )
 
 
@@ -31,6 +30,7 @@ var (
 
 	// HyperParameter, threshold of minimum num of clients
 	N = 1
+	filenum = 0
 
 	Round = 1
 )
@@ -52,9 +52,10 @@ func fed_avg(hub *Hub){
 func aggregationTimer(hub *Hub, c chan bool){
 	// This goroutine is always running state
 	for {
+		// fmt.Println(currWeight)
 		// This will check the state is ready to fed_avg 
 		// if (uint32(len(hub.Clients)) == currWeight && len(hub.Clients) > N){
-		if (currWeight > 9 ){
+		if (currWeight > 1 ){
 			fed_avg(hub)
 		}
 	}
@@ -103,8 +104,8 @@ func handleConnection(conn net.Conn, hub *Hub) {
 				weights = weights[:size]
 				fmt.Println("--------Local weights receiving done-------")
 
-				now := time.Now().Format("2006-01-02#15:04:05")
-				err = ioutil.WriteFile("./aggregator/locals/"+now, weights, 0644)
+				// now := time.Now().Format("2006-01-02#15:04:05")
+				err = ioutil.WriteFile("./aggregator/locals/Client"+strconv.Itoa(filenum), weights, 0644)
 				if err != nil {
 					panic(err)
 				}
