@@ -10,6 +10,15 @@ import pickle
 import os
 import copy
 
+import io
+class CPU_Unpickler(pickle.Unpickler):
+    def find_class(self, module, name):
+        if module == 'torch.storage' and name == '_load_from_bytes':
+            return lambda b: torch.load(io.BytesIO(b), map_location='cpu')
+        else:
+            return super().find_class(module, name)
+
+
 class Updater:
     def __init__(self, config):
         self.config = config
@@ -81,7 +90,7 @@ class Updater:
         self.global_weights = w_avg
 
         # Save aggregated global weights
-        self.save_weights(self.global_weights, './globals/global.pickle')
+        self.save_weights(self.global_weights, './aggregator/globals/global.pickle')
 
     def save_weights(self, givenWeights, PATH):
         with open(PATH, 'wb') as f:
@@ -90,12 +99,12 @@ class Updater:
     def load_weights(self, filePath):
         # Load local weights from .pickle
         with open(filePath, 'rb') as inputfile:
-            weights = pickle.load(inputfile)
+            weights = CPU_Unpickler(inputfile).load()
         return weights
 
     def set_init_weights(self, filePath):
         with open(filePath, 'rb') as inputfile:
-            weights = pickle.load(inputfile)
+            weights = CPU_Unpickler(inputfile).load()
         logging.info("Init Weights Test")
         self.init_weights = weights
 
@@ -105,9 +114,9 @@ if __name__=="__main__":
         format='[%(levelname)s][%(asctime)s]: %(message)s',
         level=getattr(logging, "INFO"), datefmt='%H:%M:%S'
     )
-    PATH = './locals/'
+    PATH = './aggregator/locals/'
     lst = os.listdir(PATH)
-    config = Config("./configs/params.json")
+    config = Config("./aggregator/configs/params.json")
 
     initTester = Updater(config)
     initTester.set_init_weights(PATH+str(lst[0]))
