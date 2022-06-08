@@ -76,8 +76,8 @@ class Updater:
         w_avg = copy.deepcopy(local_weights[0])
         for k in w_avg.keys():
             for i in range(1, client_num):
-                w_avg[k] += local_weights[i][k]
-            w_avg[k] /= float(client_num)
+                w_avg[k] = torch.add(w_avg[k], local_weights[i][k])
+            w_avg[k] = torch.div(w_avg[k], float(client_num))
         self.global_weights = w_avg
 
         # Save aggregated global weights
