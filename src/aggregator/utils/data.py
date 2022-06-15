@@ -6,7 +6,7 @@ import numpy as np
 class MNIST:
     def __init__(self, config):
         self.config = config
-        # print(self.config.paths.data)
+        print(self.config.paths.data)
         self.path = str(self.config.paths.data) + "/" + self.config.dataset
         self.trainset = None
         self.testset = None
@@ -31,7 +31,7 @@ class MNIST:
 class FashionMNIST:
     def __init__(self, config):
         self.config = config
-        # print(self.config.paths.data)
+        print(self.config.paths.data)
         self.path = str(self.config.paths.data) + "/" + self.config.dataset
         self.trainset = None
         self.testset = None

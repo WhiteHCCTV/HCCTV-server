@@ -19,7 +19,6 @@ class CPU_Unpickler(pickle.Unpickler):
         else:
             return super().find_class(module, name)
 
-
 class Updater:
     def __init__(self, config):
         self.config = config
@@ -90,8 +89,8 @@ class Updater:
         w_avg = copy.deepcopy(local_weights[0])
         for k in w_avg.keys():
             for i in range(1, client_num):
-                w_avg[k] += local_weights[i][k]
-            w_avg[k] /= float(client_num)
+                w_avg[k] = torch.add(w_avg[k], local_weights[i][k])
+            w_avg[k] = torch.div(w_avg[k], float(client_num))
         self.global_weights = w_avg
 
         # Save aggregated global weights
@@ -104,17 +103,16 @@ class Updater:
     def load_weights(self, filePath):
         # Load local weights from .pickle
         with open(filePath, 'rb') as inputfile:
+            #weights = pickle.load(inputfile)
             weights = CPU_Unpickler(inputfile).load()
         return weights
 
     def set_init_weights(self, filePath):
         with open(filePath, 'rb') as inputfile:
-            weights = CPU_Unpickler(inputfile).load()
+        weights = CPU_Unpickler(inputfile).load()
         # logging.info("Init Weights Test")
         print(datetime.now().strftime("[%H:%M:%S]")+"Init Weights Test")        
         self.init_weights = weights
-
-
 
 if __name__=="__main__":
     logging.basicConfig(
