@@ -30,34 +30,31 @@ var (
 	currWeight uint32 = 0
 
 	// HyperParameter, threshold of minimum num of clients
-	N = 2
+	N = 1
+
+	Round = 1
 )
 
 
 func fed_avg(hub *Hub){
-	fmt.Println("가중치 평균 연산 시작")
-	fmt.Println("현재 참여 중인 클라이언트")
-
+	log.Println("\nRound",Round,"종료")
+	log.Println("Federated averaging & Measure accuracy\n")
 	// @Todo : matrix average algorithm
 	cmd  := exec.Command("python3","./aggregator/aggregator.py")
 	cmd.Stdout = os.Stdout
 	if err := cmd.Run() ; err != nil {
 		log.Println(err)
 	}
-
-	for client := range hub.Clients{
-		fmt.Println(client.Conn)
-	}
-
 	// round parameter reinitialize
 	currWeight = 0
-	fmt.Println("currWeight 초기화 : ", currWeight)
+	// fmt.Println("currWeight 초기화 : ", currWeight)
 }
 func aggregationTimer(hub *Hub, c chan bool){
 	// This goroutine is always running state
 	for {
 		// This will check the state is ready to fed_avg 
-		if (uint32(len(hub.Clients)) == currWeight && len(hub.Clients) > N){
+		// if (uint32(len(hub.Clients)) == currWeight && len(hub.Clients) > N){
+		if (currWeight > 9 ){
 			fed_avg(hub)
 		}
 	}
@@ -89,7 +86,7 @@ func handleConnection(conn net.Conn, hub *Hub) {
 				if err != nil {
 					log.Println(err)
 				}
-				fmt.Println("--------File receive start-------\n")
+				fmt.Println("--------Local weights receiving start------")
 				dump := 0
 				for{
 					buf = make([]byte,1024)
@@ -104,14 +101,14 @@ func handleConnection(conn net.Conn, hub *Hub) {
 					dump += 1024
 				}
 				weights = weights[:size]
-				fmt.Println("--------File receive done-------\n")
+				fmt.Println("--------Local weights receiving done-------")
 
 				now := time.Now().Format("2006-01-02#15:04:05")
-				err = ioutil.WriteFile("./weights/"+now, weights, 0644)
+				err = ioutil.WriteFile("./aggregator/locals/"+now, weights, 0644)
 				if err != nil {
 					panic(err)
 				}
-				fmt.Printf("--------Create file at ./weights/%s-------\n",now)
+				// fmt.Printf("--------Create file at ./weights/%s-------\n",now)
 				currWeight++
 			}
 			
@@ -125,7 +122,7 @@ func handleConnection(conn net.Conn, hub *Hub) {
 		// 연결 해제 감지
 		case err := <-notify:
 			if io.EOF == err {
-				fmt.Println(client.Conn," is disconnected : ", err)
+				// fmt.Println(client.Conn," is disconnected : ", err)
 				currWeight--
 				hub.Unregister <- client
 				return
@@ -147,7 +144,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	log.Println("TCP Socket opend at", serverAddr)
+	log.Println("Aggregation server opend at", serverAddr)
 	for {
 		// 소켓 접속 클라이언트가 생기면 handleConnection goroutine에 위임
 		conn, _ := server.Accept()

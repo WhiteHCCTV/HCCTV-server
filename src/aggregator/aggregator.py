@@ -1,3 +1,4 @@
+from datetime import datetime
 from torch import nn, optim
 import torch
 from models import models
@@ -10,6 +11,14 @@ import pickle
 import os
 import copy
 
+import io
+class CPU_Unpickler(pickle.Unpickler):
+    def find_class(self, module, name):
+        if module == 'torch.storage' and name == '_load_from_bytes':
+            return lambda b: torch.load(io.BytesIO(b), map_location='cpu')
+        else:
+            return super().find_class(module, name)
+
 class Updater:
     def __init__(self, config):
         self.config = config
@@ -20,7 +29,9 @@ class Updater:
         self.init_weights = None
 
     def load_model(self):
-        logging.info('Load Model: {}'.format(self.config.dataset))
+        # logging.info('Load Model: {}'.format(self.config.dataset))
+        print(datetime.now().strftime("[%H:%M:%S]")+'Load Model: {}'.format(self.config.dataset))
+        
         model = models.get_model()
         return model
 
@@ -57,7 +68,8 @@ class Updater:
         acc = int(corrects) / len(self.test_loader.dataset)
         avg_loss = test_loss / len(self.test_loader.dataset)
 
-        logging.info("Test Accuracy: {}, Avgerage Loss: {}".format(acc, avg_loss))
+        # logging.info("Test Accuracy: {}, Avgerage Loss: {}".format(acc, avg_loss))
+        print(datetime.now().strftime("[%H:%M:%S]")+"Test Accuracy: {}, Avgerage Loss: {}".format(acc, avg_loss))
 
         return acc, avg_loss
 
@@ -67,7 +79,8 @@ class Updater:
         file_list = os.listdir(dir_path)
 
         client_num = len(file_list)
-        logging.info("Client_Num: {}".format(client_num))
+        # logging.info("Client_Num: {}".format(client_num))
+        print(datetime.now().strftime("[%H:%M:%S]")+"Client_Num: {}".format(client_num))
 
         for i in range(client_num):
             file_path = dir_path + file_list[i]
@@ -90,15 +103,16 @@ class Updater:
     def load_weights(self, filePath):
         # Load local weights from .pickle
         with open(filePath, 'rb') as inputfile:
-            weights = pickle.load(inputfile)
+            #weights = pickle.load(inputfile)
+            weights = CPU_Unpickler(inputfile).load()
         return weights
 
     def set_init_weights(self, filePath):
         with open(filePath, 'rb') as inputfile:
-            weights = pickle.load(inputfile)
-        logging.info("Init Weights Test")
+        weights = CPU_Unpickler(inputfile).load()
+        # logging.info("Init Weights Test")
+        print(datetime.now().strftime("[%H:%M:%S]")+"Init Weights Test")        
         self.init_weights = weights
-
 
 if __name__=="__main__":
     logging.basicConfig(
@@ -111,13 +125,14 @@ if __name__=="__main__":
 
     initTester = Updater(config)
     initTester.set_init_weights(PATH+str(lst[0]))
-    logging.info("Init Weights Accuracy using '{}'".format(lst[0]))
+    # logging.info("Init Weights Accuracy using '{}'".format(lst[0]))
+    print(datetime.now().strftime("[%H:%M:%S]")+"Init Weights Accuracy using '{}'".format(lst[0]))
     initTester.test(True)
 
     print()
 
     updater = Updater(config)
-    logging.info("Global Weights Accuracy")
+    # logging.info("Global Weights Accuracy")
+    print(datetime.now().strftime("[%H:%M:%S]")+"Global Weights Accuracy")
     updater.fed_avg(PATH)
     updater.test(False)
-
