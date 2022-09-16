@@ -5,10 +5,10 @@ services:
     build: ./
     container_name: fl-server
     ports: 
-      - "3000:3000"
+      - "3000:4000"
     tty: true
     volumes:
-      - .env:/go/apps/HCCTV/src/.env
+      - .env:/go/apps/HCCTV/.env
       - ./src:/go/apps/HCCTV/src
   nginx: # loadbalancer
     image: nginx:latest
@@ -25,11 +25,11 @@ services:
     image: mysql/mysql-server
     container_name: dev_db
     restart: always
-    command:
-      - --character-set-server=utf8mb4
-      - --collation-server=utf8mb4_unicode_ci
-      - --lower_case_table_names=1
     env_file: .env
+    volumes:
+      - ./db/conf.d:/etc/mysql/conf.d
+      - ./dev/data:/var/lib/mysql
+      - ./db/initdb.d:/docker-entrypoint-initdb.d 
   logger_db: # db for server log
     image: mongo
     container_name: logger_db
