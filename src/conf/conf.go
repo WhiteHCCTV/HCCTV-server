@@ -18,10 +18,13 @@ func GetEnv(key string) string{
 	return os.Getenv(key)
 }
 func GetAddr() string{
-    if (os.Getenv("ENV") == "dev"){
-        return os.Getenv("HOST")+":"+os.Getenv("DOMAIN_PORT")
-    } else {
-        return os.Getenv("AWS")+":"+os.Getenv("AWS_PORT")
+  switch ( os.Getenv("ENV") ){
+    case "local":
+      return "localhost:"+os.Getenv("LOCAL_PORT")
+    case "dev":
+      return "localhost:"+os.Getenv("DEV_PORT")
+    case "prod":
+      return os.Getenv("AWS")+":"+os.Getenv("AWS_PORT")
     }
-    
-}
+    return "Invalid env"
+  }
