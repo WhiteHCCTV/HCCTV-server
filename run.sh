@@ -7,6 +7,12 @@ case "$1" in
 		npm install --prefix ./HCCTV-apm
 		npm run serve --prefix ./HCCTV-apm
 	;;
+  local)
+    export ENV=local
+    docker compose -f docker-compose.local.yaml up --build -d
+    cd src
+    go run main.go
+    ;;
 	dev) # dev env up
 		if [ "$2" == "apm" ] ; then
 		  	npm install --prefix ./HCCTV-apm
