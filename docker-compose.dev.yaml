@@ -1,0 +1,23 @@
+version: "3.8"
+
+services:
+  dev_fl_db: # db for scheduling with client id
+    image: mysql/mysql-server
+    container_name: dev_fl_db
+    restart: always
+    env_file: .env.dev
+    volumes:
+      - ./db/conf.d:/etc/mysql/conf.d
+      - ./dev/data:/var/lib/mysql
+      - ./db/initdb.d:/docker-entrypoint-initdb.d
+  
+  services:
+    dev_nginx:
+      container_name: dev_nginx
+      ports:
+        - "80:80"
+        - "443:443"
+      volumes:
+        - .docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+        - .docker/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf
+        - .docker/nginx/static/error.html:/etc/nginx/static/error.html
